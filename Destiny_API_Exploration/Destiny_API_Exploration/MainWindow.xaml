@@ -1,4 +1,5 @@
 ﻿<Window x:Class="Destiny_API_Exploration.MainWindow"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,6 +8,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+    <Button Name="LoginButton" Width="100" Height="50" 
+            VerticalAlignment="Top" HorizontalAlignment="Left" 
+            Click="Login">
+        Authorize
+    </Button>
+        <wv2:WebView2 Name="webView"
+                      Source="https://www.bungie.net/"
+                      Height="400" Width="400"
+                      Visibility="Hidden"
+        />
     </Grid>
 </Window>

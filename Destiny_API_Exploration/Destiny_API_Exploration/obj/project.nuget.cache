@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "FHqbwc0M6ureGk9o/Yr+OdMZIeeOGXvX8bF/3G+DWpizwoksF0ZRB6/JKjGbxsGF8BwQ9+VH5uB9Wy5CT68ZPw==",
+  "dgSpecHash": "oMTpeDID1SCcURHwetCCxlxd5xx2cLEd+wwJrExxqKh8VtAfA+uKZ8afxqoZHoOjbJXPfPBaIUWRWtK7ptJdqA==",
   "success": true,
   "projectFilePath": "C:\\pv178\\Destiny-API-Exploration\\Destiny_API_Exploration\\Destiny_API_Exploration\\Destiny_API_Exploration.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.web.webview2\\1.0.2478.35\\microsoft.web.webview2.1.0.2478.35.nupkg.sha512"
+  ],
   "logs": []
 }
