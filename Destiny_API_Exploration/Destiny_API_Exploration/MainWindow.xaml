@@ -15,7 +15,6 @@
     </Button>
         <wv2:WebView2 Name="webView"
                       Source="https://www.bungie.net/"
-                      Height="400" Width="400"
                       Visibility="Hidden"
         />
     </Grid>
