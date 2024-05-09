@@ -6,10 +6,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Destiny_API_Exploration"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="760" Width="1080">
     <Grid>
     <Button Name="LoginButton" Width="100" Height="50" 
-            VerticalAlignment="Top" HorizontalAlignment="Left" 
+            VerticalAlignment="Center" HorizontalAlignment="Center" 
             Click="Login">
         Authorize
     </Button>

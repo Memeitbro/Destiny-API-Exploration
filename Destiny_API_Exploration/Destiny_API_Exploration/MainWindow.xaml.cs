@@ -32,6 +32,7 @@ public partial class MainWindow : Window
         "https://www.bungie.net/Platform/App/OAuth/token/";
 
     private Auth? Authorization;
+    private DestinyMemberShip MainMemberShip;
     public MainWindow()
     {
         InitializeComponent();
@@ -43,7 +44,7 @@ public partial class MainWindow : Window
         LoginButton.Visibility = Visibility.Collapsed;
         HttpClient client = new HttpClient();
         await webView.EnsureCoreWebView2Async();
-        if (webView != null && webView.CoreWebView2 != null)
+        if (webView?.CoreWebView2 != null)
         {
             webView.CoreWebView2.Navigate(AuthReq);
             webView.Visibility = Visibility.Visible;
@@ -66,7 +67,7 @@ public partial class MainWindow : Window
     }
 
     
-    private async void GetToken(string code, HttpClient client)
+    private async Task<Auth> GetToken(string code, HttpClient client)
     {
         IEnumerable<KeyValuePair<string, string>> body = new KeyValuePair<string, string>[]
         {
@@ -81,6 +82,20 @@ public partial class MainWindow : Window
 
         HttpResponseMessage response = await client.PostAsync("https://www.bungie.net/platform/app/oauth/token/", content);
         Authorization = JsonSerializer.Deserialize<Auth>(await response.Content.ReadAsStringAsync());
-        Console.WriteLine(Authorization?.access_token);
+        await getMemberShips(client);
+        return Authorization!;
     }
+
+    private async Task<DestinyMemberShip> getMemberShips(HttpClient client)
+    {
+        Console.WriteLine($"https://www.bungie.net/platform/User/GetBungieAccount/{Authorization?.membership_id}/254");
+        HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get,
+            $"https://www.bungie.net/platform/User/GetBungieAccount/{Authorization?.membership_id}/254");
+        req.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
+        HttpResponseMessage res = await client.SendAsync(req);
+        var responseToBungieAccount = JsonSerializer.Deserialize<ResponseToBungieAccount>(await res.Content.ReadAsStringAsync());
+        MainMemberShip = responseToBungieAccount!.Response.destinyMemberships.First(member => member.membershipType == 3);
+        return MainMemberShip;
+    }
+    
 }
