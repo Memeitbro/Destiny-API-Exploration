@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Destiny_API_Exploration.Objects;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
@@ -29,6 +30,8 @@ public partial class MainWindow : Window
 
     private string TokenUri =
         "https://www.bungie.net/Platform/App/OAuth/token/";
+
+    private Auth? Authorization;
     public MainWindow()
     {
         InitializeComponent();
@@ -36,6 +39,8 @@ public partial class MainWindow : Window
     
     private async void Login(object sender, RoutedEventArgs a)
     {
+        LoginButton.IsEnabled = false;
+        LoginButton.Visibility = Visibility.Collapsed;
         HttpClient client = new HttpClient();
         await webView.EnsureCoreWebView2Async();
         if (webView != null && webView.CoreWebView2 != null)
@@ -49,18 +54,19 @@ public partial class MainWindow : Window
         {
             if (!e.Uri.StartsWith("https://localhost:8888"))
                 return;
-            
+
             var uri = new Uri(e.Uri);
             code = HttpUtility.ParseQueryString(uri.Query).Get("code");
-
-            Console.WriteLine(code);
+            
             GetToken(code, client);
             e.Cancel = true;
+            webView.IsEnabled = false;
+            webView.Visibility = Visibility.Collapsed;
         };
     }
 
     
-    private static async void GetToken(string code, HttpClient client)
+    private async void GetToken(string code, HttpClient client)
     {
         IEnumerable<KeyValuePair<string, string>> body = new KeyValuePair<string, string>[]
         {
@@ -74,8 +80,7 @@ public partial class MainWindow : Window
         content.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
 
         HttpResponseMessage response = await client.PostAsync("https://www.bungie.net/platform/app/oauth/token/", content);
-
-        Console.WriteLine(response.StatusCode);
-        Console.WriteLine( await response.Content.ReadAsStringAsync());
+        Authorization = JsonSerializer.Deserialize<Auth>(await response.Content.ReadAsStringAsync());
+        Console.WriteLine(Authorization?.access_token);
     }
 }
