@@ -7,4 +7,5 @@ public class Item
     public int location { get; set; }
     public long bucketHash { get; set; }
     public int transferStatus { get; set; }
+    public int quantity { get; set; }
 }

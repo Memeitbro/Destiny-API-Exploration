@@ -82,10 +82,8 @@ public partial class MainWindow : Window
         var content = new FormUrlEncodedContent(body);
         content.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
         
-        Console.WriteLine("awaiting token");
         HttpResponseMessage response = await client.PostAsync("https://www.bungie.net/platform/app/oauth/token/", content);
         Authorization = JsonSerializer.Deserialize<Auth>(await response.Content.ReadAsStringAsync());
-        Console.WriteLine(Authorization.access_token);
         await GetMemberShips();
         return Authorization!;
     }
@@ -95,11 +93,9 @@ public partial class MainWindow : Window
         HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get,
             $"https://www.bungie.net/platform/User/GetBungieAccount/{Authorization?.membership_id}/254");
         req.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
-        Console.WriteLine("awaiting memberships");
         HttpResponseMessage res = await client.SendAsync(req);
         var responseToBungieAccount = JsonSerializer.Deserialize<ResponseToBungieAccount>(await res.Content.ReadAsStringAsync());
         MainMemberShip = responseToBungieAccount!.Response.destinyMemberships.First(member => member.membershipType == 3);
-        Console.WriteLine("Done with memberships");
         await GetCharacterIds();
         return MainMemberShip;
     }
@@ -124,10 +120,33 @@ public partial class MainWindow : Window
         var req = new HttpRequestMessage(HttpMethod.Get,
             $"https://www.bungie.net/Platform/Destiny2/{MainMemberShip.membershipType}" +
             $"/Profile/{MainMemberShip.membershipId}/?components=201");
+        req.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
+        req.Headers.Add("Authorization", Authorization.token_type + " " + Authorization?.access_token);
         var res = await client.SendAsync(req);
-        var characters =
-            JsonSerializer.Deserialize<getCharacterInventoriesResponse>(await res.Content.ReadAsStringAsync());
-        foreach (var character in characters.Response.characterInventories.data.Keys)
+        try
+        {
+            var characters =
+                JsonSerializer.Deserialize<getCharacterInventoriesResponse>(await res.Content.ReadAsStringAsync());
+            foreach (var character in characters.Response.characterInventories.data.Keys)
+            {
+                Inventories.TryAdd(character, []);
+                Inventories[character] = [];
+                foreach (var item in characters.Response.characterInventories.data[character].items)
+                {
+                    if (item.transferStatus == 0) // is transferable
+                    {
+                        Inventories[character].Add(item);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return new Dictionary<string, List<Item>>();
+        }
+
+        /*foreach (var character in characters.Response.characterInventories.data.Keys)
         {
             Inventories.TryAdd(character, []);
             Inventories[character] = [];
@@ -138,26 +157,79 @@ public partial class MainWindow : Window
                     Inventories[character].Append(item);
                 }
             }
-        }
+        }*/
         req = new HttpRequestMessage(HttpMethod.Get,
             $"https://www.bungie.net/Platform/Destiny2/{MainMemberShip.membershipType}" +
-                                $"/Profile/{MainMemberShip.membershipId}/?components=102");
+            $"/Profile/{MainMemberShip.membershipId}/?components=102");
         req.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
         req.Headers.Add("Authorization", Authorization.token_type + " " + Authorization?.access_token);
         res = await client.SendAsync(req);
-        getVaultInventoryResponse? vault =
-            JsonSerializer.Deserialize<getVaultInventoryResponse>(await res.Content.ReadAsStringAsync());
-        Inventories.TryAdd("vault", []);
-        Inventories["vault"] = [];
-        foreach (var item in vault.Response.profileInventory.data.items)
+        try
         {
-            if (item.transferStatus == 0) // is transferable
-
+            var vault =
+                JsonSerializer.Deserialize<getVaultInventoryResponse>(await res.Content.ReadAsStringAsync());
+            Inventories.TryAdd("vault", []);
+            Inventories["vault"] = [];
+            foreach (var item in vault.Response.profileInventory.data.items)
             {
-                Inventories["vault"].Append(item);
+                if (item.transferStatus == 0) // is transferable
+                {
+                    Inventories["vault"].Add(item);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+
+        }
+        
+        if (CharIds.characterIds.Length > 0)
+        {
+            character1.Visibility = Visibility.Visible;
+            charName1.Visibility = Visibility.Visible;
+            charName1.Content = CharIds.characterIds[0];
+            foreach (var item in Inventories[CharIds.characterIds[0]])
+            {
+                character1.Items.Add(item.itemHash + " : " + item.itemInstanceId);
             }
         }
 
+        if (CharIds.characterIds.Length > 1)
+        {
+            character2.Visibility = Visibility.Visible;
+            charName2.Visibility = Visibility.Visible;
+            charName2.Content = CharIds.characterIds[1];
+            foreach (var item in Inventories[CharIds.characterIds[1]])
+            {
+                character2.Items.Add(item.itemHash + " : " + item.itemInstanceId);
+            }
+        }
+
+        if (CharIds.characterIds.Length > 2)
+        {
+            character3.Visibility = Visibility.Visible;
+            charName3.Visibility = Visibility.Visible;
+            charName3.Content = CharIds.characterIds[2];
+            foreach (var item in Inventories[CharIds.characterIds[2]])
+            {
+                character3.Items.Add(item.itemHash + " : " + item.itemInstanceId);
+            }
+        }
+
+        vault.Visibility = Visibility.Visible;
+        vaultName.Visibility = Visibility.Visible;
+        foreach (var item in Inventories["vault"])
+        {
+            vault.Items.Add(item.itemHash + " : " + item.itemInstanceId);
+        }
+
+        SelectedItem.Visibility = Visibility.Visible;
         return Inventories;
+    }
+
+    private void Character1_OnSelected(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }

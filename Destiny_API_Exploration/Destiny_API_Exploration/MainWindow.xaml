@@ -6,16 +6,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Destiny_API_Exploration"
         mc:Ignorable="d"
-        Title="MainWindow" Height="760" Width="1080">
+        Title="Evil Fucked Up Destiny Item Manager" Width="1920" Height="1080">
     <Grid>
-    <Button Name="LoginButton" Width="100" Height="50" 
-            VerticalAlignment="Center" HorizontalAlignment="Center" 
-            Click="Login">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Button Name="LoginButton" Width="100" Height="50" 
+                VerticalAlignment="Center" HorizontalAlignment="Center" 
+                Click="Login" Grid.RowSpan="2" Grid.ColumnSpan="5">
         Authorize
     </Button>
         <wv2:WebView2 Name="webView"
                       Source="https://www.bungie.net/"
                       Visibility="Hidden"
-        />
+                      Grid.RowSpan="2" Grid.ColumnSpan="5"
+                      />
+        <Label Name="charName1" Grid.Row="0" Grid.Column="0" Visibility="Hidden" Content="Unknown Character"></Label>
+        <Label Name="charName2" Grid.Row="0" Grid.Column="1" Visibility="Hidden" Content="Unknown Character"></Label>
+        <Label Name="charName3" Grid.Row="0" Grid.Column="2" Visibility="Hidden" Content="Unknown Character"></Label>
+        <Label Name="vaultName" Grid.Row="0" Grid.Column="3" Visibility="Hidden" Content="The Vault"></Label>
+        <Label Name="SelectedItem" Grid.Row="0" Grid.Column="0" Visibility="Hidden" Content="No Item Selected"></Label>
+        <ListView Name="character1" Grid.Row="1" Grid.Column="0" Visibility="Hidden" SelectionMode="Single" Selected="Character1_OnSelected"> </ListView>
+        <ListView Name="character2" Grid.Row="1" Grid.Column="1" Visibility="Hidden" SelectionMode="Single"> </ListView>
+        <ListView Name="character3" Grid.Row="1" Grid.Column="2" Visibility="Hidden" SelectionMode="Single"> </ListView>
+        <ListView Name="vault" Grid.Row="1" Grid.Column="3" Visibility="Hidden" SelectionMode="Single"> </ListView>
     </Grid>
 </Window>
