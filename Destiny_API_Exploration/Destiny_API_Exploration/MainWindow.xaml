@@ -6,8 +6,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Destiny_API_Exploration"
         mc:Ignorable="d"
-        Title="Evil Destiny Item Manager" Width="1920" Height="1080">
-    <Grid>
+        Title="Evil Destiny Item Manager" Width="1920" Height="1080"
+        Name="mainWindo">
+    <Grid Name="Grid">
         <Grid.RowDefinitions>
             <RowDefinition Height="75"></RowDefinition>
             <RowDefinition></RowDefinition>

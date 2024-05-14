@@ -28,7 +28,7 @@ namespace Destiny_API_Exploration;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private string authCode = "";
+    private string? authCode = null;
     private string AuthReq =
         "https://www.bungie.net/en/oauth/authorize?client_id=46798&response_type=code&state=6i0mkLx79Hp91nzWVeHrzHG4";
 
@@ -50,7 +50,6 @@ public partial class MainWindow : Window
         authCode = HttpUtility.ParseQueryString(uri.Query).Get("code");
 
         GetToken();
-        e.Cancel = true;
         webView.IsEnabled = false;
         webView.Visibility = Visibility.Collapsed;
     }
@@ -63,9 +62,12 @@ public partial class MainWindow : Window
     {
         try
         {
+            
             LoginButton.IsEnabled = false;
             LoginButton.Visibility = Visibility.Collapsed;
             await webView.EnsureCoreWebView2Async();
+            webView.CoreWebView2.CookieManager.DeleteAllCookies();
+            webView.CoreWebView2.Reload();
             if (webView?.CoreWebView2 != null)
             {
                 webView.CoreWebView2.Navigate(AuthReq);
@@ -78,20 +80,21 @@ public partial class MainWindow : Window
                     return;
 
                 var uri = new Uri(e.Uri);
-                authCode = HttpUtility.ParseQueryString(uri.Query).Get("code");
-
-                GetToken();
-                webView.IsEnabled = false;
-                webView.Visibility = Visibility.Collapsed;
+                var code = HttpUtility.ParseQueryString(uri.Query).Get("code");
+                if (authCode != code)
+                {
+                    authCode = code;
+                    
+                    GetToken();
+                    webView.IsEnabled = false;
+                    webView.Visibility = Visibility.Collapsed;
+                }
             };
-            
-
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
         }
-        
     }
 
     
@@ -121,7 +124,7 @@ public partial class MainWindow : Window
         req.Headers.Add("X-API-Key", "f12e32517f1a4b72aa46e39c42e944a7");
         HttpResponseMessage res = await client.SendAsync(req);
         var responseToBungieAccount = JsonSerializer.Deserialize<ResponseToBungieAccount>(await res.Content.ReadAsStringAsync());
-        MainMemberShip = responseToBungieAccount!.Response.destinyMemberships.First(member => member.membershipType == 3);
+        MainMemberShip = responseToBungieAccount!.Response.destinyMemberships.First(member => true);
         await GetCharacterIds();
         return MainMemberShip;
     }
@@ -347,7 +350,7 @@ public partial class MainWindow : Window
                     transferToVault = true,
                     itemId = item.itemInstanceId,
                     characterId = item.currentlyIn,
-                    membershipType = 3
+                    membershipType = MainMemberShip.membershipType
                 }),
                 Encoding.UTF8,
                 "application/json");
@@ -386,7 +389,7 @@ public partial class MainWindow : Window
                 transferToVault = false,
                 itemId = item.itemInstanceId,
                 characterId = who,
-                membershipType = 3
+                membershipType = MainMemberShip.membershipType
             }),
             Encoding.UTF8,
             "application/json");
@@ -529,11 +532,19 @@ public partial class MainWindow : Window
         char3Transfer.Visibility = Visibility.Hidden;
         char3Equip.Visibility = Visibility.Hidden;
         ToVault.Visibility = Visibility.Hidden;
+        char1Transfer.Visibility = Visibility.Collapsed;
+        char1Equip.Visibility = Visibility.Collapsed;
+        char2Transfer.Visibility = Visibility.Collapsed;
+        char2Equip.Visibility = Visibility.Collapsed;
+        char3Transfer.Visibility = Visibility.Collapsed;
+        char3Equip.Visibility = Visibility.Collapsed;
+        ToVault.Visibility = Visibility.Collapsed;
         SelectedItem.Visibility = Visibility.Hidden;
         SelectedItem.Content = "";
         character1.Visibility = Visibility.Hidden;
         character2.Visibility = Visibility.Hidden;
         character3.Visibility = Visibility.Hidden;
+
         character1.Items.Clear();
         character2.Items.Clear();
         character3.Items.Clear();
@@ -547,6 +558,7 @@ public partial class MainWindow : Window
         LogOut.Visibility = Visibility.Hidden;
         
         webView.CoreWebView2.Navigate("https://www.bungie.net/");
+        webView.IsEnabled = true;
         LoginButton.IsEnabled = true;
         LoginButton.Visibility = Visibility.Visible;
     }
