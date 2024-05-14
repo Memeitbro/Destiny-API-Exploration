@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Destiny_API_Exploration"
         mc:Ignorable="d"
-        Title="Evil Fucked Up Destiny Item Manager" Width="1920" Height="1080">
+        Title="Evil Destiny Item Manager" Width="1920" Height="1080">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"></RowDefinition>
@@ -29,14 +29,53 @@
                       Visibility="Hidden"
                       Grid.RowSpan="2" Grid.ColumnSpan="5"
                       />
-        <Label Name="charName1" Grid.Row="0" Grid.Column="0" Visibility="Hidden" Content="Unknown Character"></Label>
-        <Label Name="charName2" Grid.Row="0" Grid.Column="1" Visibility="Hidden" Content="Unknown Character"></Label>
-        <Label Name="charName3" Grid.Row="0" Grid.Column="2" Visibility="Hidden" Content="Unknown Character"></Label>
-        <Label Name="vaultName" Grid.Row="0" Grid.Column="3" Visibility="Hidden" Content="The Vault"></Label>
-        <Label Name="SelectedItem" Grid.Row="0" Grid.Column="0" Visibility="Hidden" Content="No Item Selected"></Label>
-        <ListView Name="character1" Grid.Row="1" Grid.Column="0" Visibility="Hidden" SelectionMode="Single" Selected="Character1_OnSelected"> </ListView>
-        <ListView Name="character2" Grid.Row="1" Grid.Column="1" Visibility="Hidden" SelectionMode="Single"> </ListView>
-        <ListView Name="character3" Grid.Row="1" Grid.Column="2" Visibility="Hidden" SelectionMode="Single"> </ListView>
-        <ListView Name="vault" Grid.Row="1" Grid.Column="3" Visibility="Hidden" SelectionMode="Single"> </ListView>
+        <Label Name="charName1" Grid.Row="0" Grid.Column="0" Visibility="Hidden" 
+               Content="Unknown Character" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="charName2" Grid.Row="0" Grid.Column="1" Visibility="Hidden"
+               Content="Unknown Character"  VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="charName3" Grid.Row="0" Grid.Column="2" Visibility="Hidden"
+               Content="Unknown Character"  VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="vaultName" Grid.Row="0" Grid.Column="3" Visibility="Hidden"
+               Content="The Vault"  VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="SelectedItem" Grid.Row="0" Grid.Column="4" Visibility="Hidden"
+               Content="No Item Selected"  VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        
+        
+        <ListView Name="character1" Grid.Row="1" Grid.Column="0" Visibility="Hidden"
+                  SelectionMode="Single" SelectionChanged="Character1_OnSelected"> </ListView>
+        <ListView Name="character2" Grid.Row="1" Grid.Column="1" Visibility="Hidden"
+                  SelectionMode="Single" SelectionChanged="Character2_OnSelected"> </ListView>
+        <ListView Name="character3" Grid.Row="1" Grid.Column="2" Visibility="Hidden"
+                  SelectionMode="Single" SelectionChanged="Character3_OnSelected"> </ListView>
+        <ListView Name="vault" Grid.Row="1" Grid.Column="3" Visibility="Hidden"
+                  SelectionMode="Single" SelectionChanged="Vault_OnSelected"> </ListView>
+        
+        <Button Name="char1Transfer" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="Hidden"
+                Content="No Character" Click="Transfer"></Button>
+        <Button Name="char1Equip" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Hidden"
+                Content="No Character" Click="Equip"></Button>
+        <Button Name="char2Transfer" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="Hidden"
+                Content="No Character" Click="Transfer"></Button>
+        <Button Name="char2Equip" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Hidden"
+                Content="No Character" Click="Equip"></Button>
+        <Button Name="char3Transfer" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Bottom" HorizontalAlignment="Left" Visibility="Hidden"
+                Content="No Character" Click="Transfer"></Button>
+        <Button Name="char3Equip" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="Hidden"
+                Content="No Character" Click="Equip"></Button>
+        
+        <Button Name="LogOut" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden"
+                Margin="0,250,0,0" Content="Log Out"
+                Click="LogOut_OnClick"></Button>
+        <Button Name="ToVault" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden"
+                Margin="0,0,0,250" Content="Banish to Vault"
+                Click="Transfer"></Button>
     </Grid>
 </Window>
