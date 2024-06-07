@@ -14,7 +14,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Destiny_API_Exploration.ErrorHandling;
+using Destiny_API_Exploration.Manifest;
 using Destiny_API_Exploration.Objects;
+using Destiny_API_Exploration.Rotators;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Button = System.Windows.Forms.Button;
@@ -40,6 +42,7 @@ public partial class MainWindow : Window
     private CharacterIds CharIds = new CharacterIds();
     private HttpClient client = new HttpClient();
     private Dictionary<string, List<Item>> Inventories = [];
+    private Dictionary<string, ItemProperties> ItemManifest;
 
     private void navigationEventHandler(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
@@ -58,6 +61,11 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
     
+    /// <summary>
+    /// starts the login process, navigating the webview to the login page
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="a"></param>
     private async void Login(object sender, RoutedEventArgs a)
     {
         try
@@ -84,7 +92,6 @@ public partial class MainWindow : Window
                 if (authCode != code)
                 {
                     authCode = code;
-                    
                     GetToken();
                     webView.IsEnabled = false;
                     webView.Visibility = Visibility.Collapsed;
@@ -97,7 +104,11 @@ public partial class MainWindow : Window
         }
     }
 
-    
+    /// <summary>
+    /// after the user has successfully logged in at the webview, this catches authorization tokens needed
+    /// for the app to have access to their account.
+    /// </summary>
+    /// <returns></returns>
     private async Task<Auth> GetToken()
     {
         IEnumerable<KeyValuePair<string, string>> body = new KeyValuePair<string, string>[]
@@ -113,10 +124,17 @@ public partial class MainWindow : Window
         
         HttpResponseMessage response = await client.PostAsync("https://www.bungie.net/platform/app/oauth/token/", content);
         Authorization = JsonSerializer.Deserialize<Auth>(await response.Content.ReadAsStringAsync());
+        ItemManifest = await ManifestGetter.GetItemManifest(client);
         await GetMemberShips();
         return Authorization!;
     }
-
+    /// <summary>
+    /// Takes a look at the user's account and catches any membership that is valid for the user.
+    /// These represent the different platforms the user plays Destiny 2 on. Since cross save is a thing
+    /// we do not care about which membership is used for our purposes, it does it's thing on every platform available to the user
+    /// no matter which membership we decide to interact with.
+    /// </summary>
+    /// <returns></returns>
     private async Task<DestinyMemberShip> GetMemberShips()
     {
         HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get,
@@ -129,7 +147,10 @@ public partial class MainWindow : Window
         return MainMemberShip;
     }
 
-
+    /// <summary>
+    /// Fetches the characters the user has on their account, inventory is shared between these.
+    /// </summary>
+    /// <returns></returns>
     private async Task<CharacterIds> GetCharacterIds()
     {
         HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get,
@@ -151,7 +172,10 @@ public partial class MainWindow : Window
 
         return CharIds;
     }
-
+    /// <summary>
+    /// Fetches the inventories of characters and the vault of the user.
+    /// </summary>
+    /// <returns></returns>
     private async Task<Dictionary<string, List<Item>>> getInventories()
     {
         var req = new HttpRequestMessage(HttpMethod.Get,
@@ -172,6 +196,11 @@ public partial class MainWindow : Window
                 {
                     if (item.transferStatus == 0 || item.transferStatus == 1) // is transferable
                     {
+                        ItemProperties props;
+                        if (ItemManifest.TryGetValue(item.itemHash.ToString(), out props))
+                        {
+                            item.name = props.displayProperties.name;
+                        }
                         Inventories[character].Add(item);
                         item.currentlyIn = character;
                     }
@@ -213,6 +242,11 @@ public partial class MainWindow : Window
                     if (alreadySomewhere)
                     {
                         continue;
+                    }
+                    ItemProperties props;
+                    if (ItemManifest.TryGetValue(item.itemHash.ToString(), out props))
+                    {
+                        item.name = props.displayProperties.name;
                     }
                     Inventories["vault"].Add(item);
                     item.currentlyIn = "vault";
@@ -279,7 +313,11 @@ public partial class MainWindow : Window
         return Inventories;
     }
 
-
+    /// <summary>
+    /// Equips and item on a character, if Item is not present on chosen character, it transfers it there first.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private async void Equip(object sender, RoutedEventArgs e)
     {
         var endpoint = "https://www.bungie.net/platform/Destiny2/Actions/Items/EquipItem/";
@@ -326,7 +364,12 @@ public partial class MainWindow : Window
         ToVault.Visibility = Visibility.Hidden;
         SelectedItem.Visibility = Visibility.Hidden;
     }
-
+    
+    /// <summary>
+    /// Transfers an item, from anywhere (whether it be a character or vault) to anywhere (character or vault)
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private async void Transfer(object sender, RoutedEventArgs e)
     {
         var endpoint = "https://www.bungie.net/platform/Destiny2/Actions/Items/TransferItem/";
@@ -427,6 +470,12 @@ public partial class MainWindow : Window
         SelectedItem.Visibility = Visibility.Hidden;
     }
     
+    /// <summary>
+    /// When an item is selected in the list of items for the first character, it shows all relevant buttons for
+    /// transferring/equipping and also which item is currently selected. Same goes for the next 3 methods.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Character1_OnSelected(object sender, RoutedEventArgs e)
     {
         SelectedItem.Content = character1.SelectedItem;
@@ -522,16 +571,89 @@ public partial class MainWindow : Window
         }
         ToVault.Visibility = Visibility.Hidden;
     }
-
+    
+    /// <summary>
+    /// On logout we clear everything including authorization and navigate the webview back to bungie.net,
+    /// we also make the login button visible again.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private async void LogOut_OnClick(object sender, RoutedEventArgs e)
     {
-        char1Transfer.Visibility = Visibility.Hidden;
-        char1Equip.Visibility = Visibility.Hidden;
-        char2Transfer.Visibility = Visibility.Hidden;
-        char2Equip.Visibility = Visibility.Hidden;
-        char3Transfer.Visibility = Visibility.Hidden;
-        char3Equip.Visibility = Visibility.Hidden;
-        ToVault.Visibility = Visibility.Hidden;
+        HideInventories();
+        character1.Items.Clear();
+        character2.Items.Clear();
+        character3.Items.Clear();
+        vault.Items.Clear();
+        Authorization = null;
+        
+        webView.CoreWebView2.Navigate("https://www.bungie.net/");
+        webView.IsEnabled = true;
+        LoginButton.IsEnabled = true;
+        LoginButton.Visibility = Visibility.Visible;
+    }
+    
+    /// <summary>
+    /// We hide inventories, if possible and the login button, also if possible, we then show raid and dungeon rotations.
+    /// Apologies for this being hard-coded, originally, it was intended to pull from the API, however,
+    /// The Final Shape (DLC that released on the 4th of june 2024) seems to have... broken it.
+    /// I currently have no idea where to fetch this data from in the API.
+    /// Originally, there were also meant to be nightfalls (weekly) and lost sectors (daily), however, since it's a new season
+    /// with a new rotation, I do not know these rotations yet, and thus they have been left out, for now. 
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public async void ShowRotations(object sender, RoutedEventArgs e)
+    {
+        HideInventories();
+        LoginButton.Visibility = Visibility.Hidden;
+        await Rotations();
+
+        FeaturedRaid.Visibility = Visibility.Visible;
+        FeaturedDungeon.Visibility = Visibility.Visible;
+        RaidLabel.Visibility = Visibility.Visible;
+        DungeonLabel.Visibility = Visibility.Visible;
+        HideRotators.Visibility = Visibility.Visible;
+        ShowRotators.Visibility = Visibility.Hidden;
+    }
+    /// <summary>
+    /// Hides rotators, goes back to inventory if user is authorized, back to login page if not.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public async void HideRotations(object sender, RoutedEventArgs e)
+    {
+        if (Authorization != null)
+        {
+            SelectedItem.Visibility = Visibility.Visible;
+            SelectedItem.Content = "";
+            character1.Visibility = Visibility.Visible;
+            character2.Visibility = Visibility.Visible;
+            character3.Visibility = Visibility.Visible;
+        
+            charName1.Visibility = Visibility.Visible;
+            charName2.Visibility = Visibility.Visible;
+            charName3.Visibility = Visibility.Visible;
+            vault.Visibility = Visibility.Visible;
+            vaultName.Visibility = Visibility.Visible;
+            LogOut.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            LoginButton.Visibility = Visibility.Visible;
+        }
+        FeaturedRaid.Visibility = Visibility.Hidden;
+        FeaturedDungeon.Visibility = Visibility.Hidden;
+        RaidLabel.Visibility = Visibility.Hidden;
+        DungeonLabel.Visibility = Visibility.Hidden;
+        HideRotators.Visibility = Visibility.Hidden;
+        ShowRotators.Visibility = Visibility.Visible;
+    }
+    /// <summary>
+    /// helper function to reduce code duplication, hides inventories.
+    /// </summary>
+    public async void HideInventories()
+    {
         char1Transfer.Visibility = Visibility.Collapsed;
         char1Equip.Visibility = Visibility.Collapsed;
         char2Transfer.Visibility = Visibility.Collapsed;
@@ -544,11 +666,6 @@ public partial class MainWindow : Window
         character1.Visibility = Visibility.Hidden;
         character2.Visibility = Visibility.Hidden;
         character3.Visibility = Visibility.Hidden;
-
-        character1.Items.Clear();
-        character2.Items.Clear();
-        character3.Items.Clear();
-        vault.Items.Clear();
         
         charName1.Visibility = Visibility.Hidden;
         charName2.Visibility = Visibility.Hidden;
@@ -556,10 +673,17 @@ public partial class MainWindow : Window
         vault.Visibility = Visibility.Hidden;
         vaultName.Visibility = Visibility.Hidden;
         LogOut.Visibility = Visibility.Hidden;
-        
-        webView.CoreWebView2.Navigate("https://www.bungie.net/");
-        webView.IsEnabled = true;
-        LoginButton.IsEnabled = true;
-        LoginButton.Visibility = Visibility.Visible;
+    }
+    
+    /// <summary>
+    /// fetches raid rotations and puts them into their respective labels.
+    /// this is called every time "ShowRotations" is called, thus, if we click show rotations after reset, it should correctly show the new rotation every time!
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> Rotations()
+    {
+        FeaturedRaid.Content = await RotatorWorker.RaidRotation();
+        FeaturedDungeon.Content = await RotatorWorker.DungeonRotation();
+        return true;
     }
 }

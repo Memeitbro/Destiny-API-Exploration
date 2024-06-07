@@ -1,7 +1,11 @@
 namespace Destiny_API_Exploration.Objects;
 
+/// <summary>
+/// a single instance of an item in the inventory, also has names now!
+/// </summary>
 public class Item
 {
+    public string? name { get; set; }
     public long itemHash { get; set; }
     public string? itemInstanceId { get; set; }
     public int location { get; set; }
@@ -14,6 +18,10 @@ public class Item
 
     public override string ToString()
     {
+        if (name != null)
+        {
+            return name;
+        }
         return itemHash + " : " + itemInstanceId;
     }
 

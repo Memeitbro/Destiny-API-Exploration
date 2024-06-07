@@ -78,5 +78,25 @@
                 VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden"
                 Margin="0,0,0,250" Content="Banish to Vault"
                 Click="Transfer"></Button>
+        
+        
+        <Button Name="ShowRotators" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible"
+                Margin="0,500,0,0" Content="Show Rotators"
+                Click="ShowRotations"></Button>
+        <Button Name="HideRotators" Grid.Row="1" Grid.Column="4" Height="50" Width="150"
+                VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden"
+                Margin="0,0,0,500" Content="Back to Inventories"
+                Click="HideRotations"></Button>
+        
+        <Label Name="RaidLabel" Grid.Row="0" Grid.Column="0" Visibility="Hidden" 
+               Content="Featured Raid for this week!" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="FeaturedRaid" Grid.Row="1" Grid.Column="0" Visibility="Hidden" 
+                   Content="Unknown to me yet!" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        
+        <Label Name="DungeonLabel" Grid.Row="0" Grid.Column="1" Visibility="Hidden" 
+               Content="Featured Dungeon for this week!" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+        <Label Name="FeaturedDungeon" Grid.Row="1" Grid.Column="1" Visibility="Hidden" 
+               Content="Unknown to me yet!" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
     </Grid>
 </Window>
