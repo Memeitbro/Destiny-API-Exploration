@@ -1,5 +1,9 @@
 namespace Destiny_API_Exploration.Objects;
 
+
+/// <summary>
+/// custom classes to deserialize httpResponses from the API
+/// </summary>
 public class ResponseToProfileGet
 {
     public ProfileData Response { get; set; }

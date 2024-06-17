@@ -1,5 +1,8 @@
 namespace Destiny_API_Exploration.Objects;
 
+/// <summary>
+/// custom classes to deserialize httpResponses from the API
+/// </summary>
 public class GetVaultInventoryResponse
 {
     public required ProfileInventory Response { get; set; }

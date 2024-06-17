@@ -1,5 +1,8 @@
 namespace Destiny_API_Exploration.Objects;
 
+/// <summary>
+/// custom classes to deserialize httpResponses from the API
+/// </summary>
 public class GetCharacterInventoriesResponse
 {
     public required CharacterInventories Response { get; set; }
